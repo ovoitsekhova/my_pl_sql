@@ -7,7 +7,7 @@ FUNCTION get_sum_price_sales (p_table VARCHAR2 DEFAULT 'products_old') RETURN NU
 BEGIN
 
     IF p_table NOT IN ('products', 'products_old') THEN
-        v_message := 'Íåïðèïóñòèìå çíà÷åííÿ! Î÷³êóºòüñÿ products àáî products_old';
+        v_message := 'ÐÐµÐ¿Ñ€Ð¸Ð¿ÑƒÑÑ‚Ð¸Ð¼Ðµ Ð·Ð½Ð°Ñ‡ÐµÐ½Ð½Ñ! ÐžÑ‡Ñ–ÐºÑƒÑ”Ñ‚ÑŒÑÑ products Ð°Ð±Ð¾ products_old';
         to_log(p_appl_proc => 'util.get_sum_price_sales', p_message => v_message);
         raise_application_error(-20001, v_message);
     END IF;

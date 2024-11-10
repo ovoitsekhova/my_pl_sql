@@ -14,20 +14,20 @@ BEGIN
                ) LOOP
                
                 IF cc.manager_id = v_manager_id THEN                
-                    dbms_output.put_line('Співробітник - ' || cc.emp_name || ', процент до зарплати на зараз заборонений');
+                    dbms_output.put_line('РЎРїС–РІСЂРѕР±С–С‚РЅРёРє - ' || cc.emp_name || ', РїСЂРѕС†РµРЅС‚ РґРѕ Р·Р°СЂРїР»Р°С‚Рё РЅР° Р·Р°СЂР°Р· Р·Р°Р±РѕСЂРѕРЅРµРЅРёР№');
                 CONTINUE;
                 END IF;
                 
                 IF cc.percent_of_salary BETWEEN 10 AND 20 THEN 
-                    v_def_percent := 'мінімальний';
+                    v_def_percent := 'РјС–РЅС–РјР°Р»СЊРЅРёР№';
                 ELSIF cc.percent_of_salary BETWEEN 25 AND 30 THEN 
-                    v_def_percent := 'середній';
+                    v_def_percent := 'СЃРµСЂРµРґРЅС–Р№';
                 ELSIF cc.percent_of_salary BETWEEN 35 AND 40 THEN          
-                    v_def_percent := 'максимальний';
+                    v_def_percent := 'РјР°РєСЃРёРјР°Р»СЊРЅРёР№';
                 END IF;
                     
                 v_percent := CONCAT(cc.percent_of_salary, '%');
-                dbms_output.put_line('Співробітник - ' || cc.emp_name || '; процент до зарплати - ' || v_percent || '; опис процента - ' || v_def_percent);
+                dbms_output.put_line('РЎРїС–РІСЂРѕР±С–С‚РЅРёРє - ' || cc.emp_name || '; РїСЂРѕС†РµРЅС‚ РґРѕ Р·Р°СЂРїР»Р°С‚Рё - ' || v_percent || '; РѕРїРёСЃ РїСЂРѕС†РµРЅС‚Р° - ' || v_def_percent);
                  
      END LOOP;           
 END;

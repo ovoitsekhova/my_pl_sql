@@ -1,4 +1,4 @@
---Ó ñïåöèô³êàö³þ
+--Ð£ ÑÐ¿ÐµÑ†Ð¸Ñ„Ñ–ÐºÐ°Ñ†Ñ–ÑŽ
 
     TYPE rec_value_list IS RECORD (region_name VARCHAR2(100),
                                    employees   NUMBER);
@@ -6,7 +6,7 @@
     
     FUNCTION get_region_cnt_emp (p_department_id IN NUMBER DEFAULT NULL) RETURN tab_value_list PIPELINED; 
     
---Ó ò³ëî
+--Ð£ Ñ‚Ñ–Ð»Ð¾
 
 FUNCTION get_region_cnt_emp (p_department_id IN NUMBER DEFAULT NULL) RETURN tab_value_list PIPELINED IS    
 
@@ -50,7 +50,7 @@ BEGIN
 END get_region_cnt_emp;
 
 
---Âèêëèê
+--Ð’Ð¸ÐºÐ»Ð¸Ðº
 
 SELECT *
 FROM TABLE(util.get_region_cnt_emp(p_department_id => 20));

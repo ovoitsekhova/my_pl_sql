@@ -5,7 +5,7 @@ PROCEDURE check_work_time IS
 BEGIN
 
     IF TO_CHAR(SYSDATE, 'DY', 'NLS_DATE_LANGUAGE = AMERICAN') IN ('SAT', 'SUN') THEN
-        raise_application_error (-20205, 'Ви можете вносити зміни лише у робочі дні');
+        raise_application_error (-20205, 'Р’Рё РјРѕР¶РµС‚Рµ РІРЅРѕСЃРёС‚Рё Р·РјС–РЅРё Р»РёС€Рµ Сѓ СЂРѕР±РѕС‡С– РґРЅС–');
     END IF;
     
 END check_work_time;
@@ -35,15 +35,15 @@ BEGIN
         
         INSERT INTO jobs(job_id, job_title, min_salary, max_salary)
         VALUES (p_job_id, p_job_title, p_min_salary, v_max_salary);
-        po_err := 'Посада '||p_job_id||' успішно додана';
+        po_err := 'РџРѕСЃР°РґР° '||p_job_id||' СѓСЃРїС–С€РЅРѕ РґРѕРґР°РЅР°';
     
     EXCEPTION
         WHEN salary_err THEN
-            raise_application_error(-20001, 'Передана зарплата менша за 2000');
+            raise_application_error(-20001, 'РџРµСЂРµРґР°РЅР° Р·Р°СЂРїР»Р°С‚Р° РјРµРЅС€Р° Р·Р° 2000');
         WHEN dup_val_on_index THEN
-            raise_application_error(-20002, 'Посада '||p_job_id||' вже існує');
+            raise_application_error(-20002, 'РџРѕСЃР°РґР° '||p_job_id||' РІР¶Рµ С–СЃРЅСѓС”');
         WHEN OTHERS THEN
-            raise_application_error(-20003, 'Виникла помилка при додаванні нової посади. '|| SQLERRM);
+            raise_application_error(-20003, 'Р’РёРЅРёРєР»Р° РїРѕРјРёР»РєР° РїСЂРё РґРѕРґР°РІР°РЅРЅС– РЅРѕРІРѕС— РїРѕСЃР°РґРё. '|| SQLERRM);
     END;
 COMMIT;
 

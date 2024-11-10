@@ -48,7 +48,7 @@ sys.dbms_scheduler.create_job(job_name      => 'update_ibank_index',
                             job_class       => 'DEFAULT_JOB_CLASS',
                             enabled         => TRUE,
                             auto_drop       => FALSE,
-                            comments        => 'Оновлення Українського індексу міжбанківських ставок овернайт');
+                            comments        => 'РћРЅРѕРІР»РµРЅРЅСЏ РЈРєСЂР°С—РЅСЃСЊРєРѕРіРѕ С–РЅРґРµРєСЃСѓ РјС–Р¶Р±Р°РЅРєС–РІСЃСЊРєРёС… СЃС‚Р°РІРѕРє РѕРІРµСЂРЅР°Р№С‚');
 END;
 /
 

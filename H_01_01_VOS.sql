@@ -6,9 +6,9 @@ BEGIN
     v_check_year := mod(v_year, 4);   
     
     IF v_check_year = 0 THEN 
-        dbms_output.put_line('Високоcний рік');
+        dbms_output.put_line('Р’РёСЃРѕРєРѕcРЅРёР№ СЂС–Рє');
     ELSE 
-        dbms_output.put_line('Не високоcний рік');
+        dbms_output.put_line('РќРµ РІРёСЃРѕРєРѕcРЅРёР№ СЂС–Рє');
     END IF;
     
 END;

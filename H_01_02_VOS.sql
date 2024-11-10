@@ -6,13 +6,13 @@ BEGIN
     v_day := to_number(to_char(v_date, 'dd'));
     
     IF v_date = (last_day(trunc(v_date))) THEN 
-        dbms_output.put_line('Виплата зарплати');
+        dbms_output.put_line('Р’РёРїР»Р°С‚Р° Р·Р°СЂРїР»Р°С‚Рё');
     ELSIF v_day = 15 THEN  
-        dbms_output.put_line('Виплата авансу');
+        dbms_output.put_line('Р’РёРїР»Р°С‚Р° Р°РІР°РЅСЃСѓ');
     ELSIF v_day < 15 THEN 
-        dbms_output.put_line('Чекаємо на аванс');
+        dbms_output.put_line('Р§РµРєР°С”РјРѕ РЅР° Р°РІР°РЅСЃ');
     ELSIF v_day > 15 THEN 
-        dbms_output.put_line('Чекаємо на зарплату');
+        dbms_output.put_line('Р§РµРєР°С”РјРѕ РЅР° Р·Р°СЂРїР»Р°С‚Сѓ');
     END IF;
 
 END;

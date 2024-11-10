@@ -11,12 +11,12 @@ BEGIN
     WHERE j.job_id = p_job_id;
 
     IF v_is_exist_job = 0 THEN
-        po_result := 'Посада '|| p_job_id ||' не існує';
+        po_result := 'РџРѕСЃР°РґР° '|| p_job_id ||' РЅРµ С–СЃРЅСѓС”';
     ELSE
         DELETE FROM jobs jj
         WHERE jj.job_id = p_job_id;
         COMMIT;
-        po_result := 'Посада ' || p_job_id || ' успішно видалена';
+        po_result := 'РџРѕСЃР°РґР° ' || p_job_id || ' СѓСЃРїС–С€РЅРѕ РІРёРґР°Р»РµРЅР°';
 
     END IF;
 
@@ -24,7 +24,7 @@ END del_jobs;
 /
 
 
---Виклик процедури
+--Р’РёРєР»РёРє РїСЂРѕС†РµРґСѓСЂРё
 DECLARE
     v_result VARCHAR2(100);
 BEGIN

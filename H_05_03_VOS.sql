@@ -1,7 +1,7 @@
 DECLARE
     v_recipient VARCHAR2(50);
     v_subject VARCHAR2(50) := 'test_subject';
-    v_mes VARCHAR2(5000) := 'Вітаю! </br> Висилаю звіт по департаментах нашої компанії: </br></br>';
+    v_mes VARCHAR2(5000) := 'Р’С–С‚Р°СЋ! </br> Р’РёСЃРёР»Р°СЋ Р·РІС–С‚ РїРѕ РґРµРїР°СЂС‚Р°РјРµРЅС‚Р°С… РЅР°С€РѕС— РєРѕРјРїР°РЅС–С—: </br></br>';
 BEGIN
 SELECT
     v_mes||'<!DOCTYPE html>
@@ -17,8 +17,8 @@ SELECT
     <table border=1 cellspacing=0 cellpadding=2 rules=GROUPS frame=HSIDES>
     <thead>
     <tr align=left>
-    <th>Назва департаменту</th>
-    <th>Кількість співробітників</th>
+    <th>РќР°Р·РІР° РґРµРїР°СЂС‚Р°РјРµРЅС‚Сѓ</th>
+    <th>РљС–Р»СЊРєС–СЃС‚СЊ СЃРїС–РІСЂРѕР±С–С‚РЅРёРєС–РІ</th>
     </tr>
     </thead>
     <tbody>
@@ -44,7 +44,7 @@ FROM (SELECT
       WHERE d.department_name is not null
       GROUP BY d.department_name)); 
         
-v_mes := v_mes || '</br></br> З повагою, Ольга';
+v_mes := v_mes || '</br></br> Р— РїРѕРІР°РіРѕСЋ, РћР»СЊРіР°';
     
     SELECT email  || '@gmail.com' INTO v_recipient
     FROM employees

@@ -5,7 +5,7 @@ PROCEDURE check_work_time IS
 BEGIN
 
     IF TO_CHAR(SYSDATE, 'DY', 'NLS_DATE_LANGUAGE = AMERICAN') IN ('SAT', 'SUN', 'MON') THEN
-        raise_application_error (-20205, 'Ви можете вносити зміни лише у робочі дні');
+        raise_application_error (-20205, 'Р’Рё РјРѕР¶РµС‚Рµ РІРЅРѕСЃРёС‚Рё Р·РјС–РЅРё Р»РёС€Рµ Сѓ СЂРѕР±РѕС‡С– РґРЅС–');
     END IF;
     
 END check_work_time;
@@ -25,13 +25,13 @@ BEGIN
         IF SQL%ROWCOUNT = 0 THEN
             RAISE v_delete_no_data_found;
         ELSE
-            po_result := 'Посада ' || p_job_id || ' успішно видалена'; 
+            po_result := 'РџРѕСЃР°РґР° ' || p_job_id || ' СѓСЃРїС–С€РЅРѕ РІРёРґР°Р»РµРЅР°'; 
         END IF;
 
         
     EXCEPTION 
         WHEN v_delete_no_data_found THEN
-            raise_application_error(-20004,  'Посада '|| p_job_id ||' не існує');
+            raise_application_error(-20004,  'РџРѕСЃР°РґР° '|| p_job_id ||' РЅРµ С–СЃРЅСѓС”');
     
     --COMMIT;
     END;

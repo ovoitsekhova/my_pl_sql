@@ -15,7 +15,7 @@ BEGIN
 END get_dep_name;
 /
 
---Виклик функцій
+--Р’РёРєР»РёРє С„СѓРЅРєС†С–Р№
 SELECT em.employee_id,
        em.first_name,
        em.last_name,
