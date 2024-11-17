@@ -1,4 +1,4 @@
---Специфікація
+--Г‘ГЇГҐГ¶ГЁГґВіГЄГ Г¶ВіГї
 CREATE OR REPLACE PACKAGE log_util AS
 
     PROCEDURE log_start (p_proc_name IN VARCHAR2, 
@@ -14,7 +14,7 @@ END log_util;
 /
 
 
---Тіло
+--Г’ВіГ«Г®
 CREATE OR REPLACE PACKAGE BODY log_util AS
 
     PROCEDURE to_log (p_appl_proc IN VARCHAR2,
@@ -34,7 +34,7 @@ CREATE OR REPLACE PACKAGE BODY log_util AS
         
     BEGIN
         IF p_text IS NULL THEN
-            v_text := 'Старт логування, назва процесу = ' || p_proc_name;
+            v_text := 'Г‘ГІГ Г°ГІ Г«Г®ГЈГіГўГ Г­Г­Гї, Г­Г Г§ГўГ  ГЇГ°Г®Г¶ГҐГ±Гі = ' || p_proc_name;
         ELSE
             v_text := p_text;
         END IF;
@@ -50,7 +50,7 @@ CREATE OR REPLACE PACKAGE BODY log_util AS
         
     BEGIN
         IF p_text IS NULL THEN
-            v_text := 'Завершення логування, назва процесу = ' || p_proc_name;
+            v_text := 'Г‡Г ГўГҐГ°ГёГҐГ­Г­Гї Г«Г®ГЈГіГўГ Г­Г­Гї, Г­Г Г§ГўГ  ГЇГ°Г®Г¶ГҐГ±Гі = ' || p_proc_name;
         ELSE
             v_text := p_text;
         END IF;
@@ -67,7 +67,7 @@ CREATE OR REPLACE PACKAGE BODY log_util AS
         
     BEGIN
         IF p_text IS NULL THEN
-            v_text := 'В процедурі ' || p_proc_name || ' сталася помилка. ' || p_sqlerrm;
+            v_text := 'Г‚ ГЇГ°Г®Г¶ГҐГ¤ГіГ°Ві ' || p_proc_name || ' Г±ГІГ Г«Г Г±Гї ГЇГ®Г¬ГЁГ«ГЄГ . ' || p_sqlerrm;
         ELSE
             v_text := p_text;
         END IF;
