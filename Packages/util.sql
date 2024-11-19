@@ -332,7 +332,7 @@ PROCEDURE fire_an_employee(p_employee_id IN NUMBER) IS
         v_message       VARCHAR2(4000);
 
     BEGIN
-        log_util.log_start('fire_an_employee');
+        log_util.log_start('fire_an_employee', 'Звільнення співробітника');
         
         check_working_hours;
         
@@ -361,7 +361,7 @@ PROCEDURE fire_an_employee(p_employee_id IN NUMBER) IS
             
             EXCEPTION
                 WHEN OTHERS THEN
-                log_util.log_error('fire_an_employee', SQLERRM, NULL);
+                log_util.log_error('fire_an_employee', SQLERRM, 'Помилка при звільненні співробітника.');
                 raise_application_error(-20001, 'Помилка при звільненні співробітника: ' || SQLERRM);
             END;
             
@@ -370,7 +370,7 @@ PROCEDURE fire_an_employee(p_employee_id IN NUMBER) IS
             VALUES 
                 (p_employee_id, v_first_name, v_last_name, v_job_id, v_department_id, v_manager_id, v_hire_date, v_fire_date, 'Звільнення');
 
-        log_util.log_finish('fire_an_employee');
+        log_util.log_finish('fire_an_employee', v_message);
             
     END fire_an_employee; 
 
