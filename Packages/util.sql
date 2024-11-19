@@ -249,9 +249,6 @@ CREATE OR REPLACE PACKAGE body util AS
         v_department_id    NUMBER;
         v_min_salary       NUMBER;
         v_max_salary       NUMBER;
-
-        v_today            VARCHAR2(10) := TO_CHAR(SYSDATE, 'DY', 'NLS_DATE_LANGUAGE=ENGLISH');
-        v_time             NUMBER       := TO_NUMBER(TO_CHAR(SYSDATE, 'HH24MI'));
         
         v_employee_id      NUMBER;
         v_message          VARCHAR2(4000);
@@ -288,10 +285,6 @@ CREATE OR REPLACE PACKAGE body util AS
         END IF;
 
         check_working_hours;
-        
-/*        IF v_today IN ('SAT', 'SUN') OR v_time < 800 OR v_time > 1800 THEN
-            raise_application_error(-20001, 'Ви можете додавати нового співробітника лише в робочий час');
-        END IF; */
 
         SELECT NVL(MAX(employee_id), 0) + 1
         INTO v_employee_id
