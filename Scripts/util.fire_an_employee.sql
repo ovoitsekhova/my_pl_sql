@@ -1,16 +1,16 @@
 --Успішно
 BEGIN
-    util.fire_an_employee(p_employee_id      => 201);
+    olxga_irn.util.fire_an_employee(p_employee_id      => 201);
 END;
 /
 
 --Неуспішно 
 BEGIN
-    util.fire_an_employee(p_employee_id      => 10);
+    olxga_irn.util.fire_an_employee(p_employee_id      => 10);
 END;
 /
 
 
-SELECT * FROM logs;
+SELECT * FROM olxga_irn.logs;
 
-SELECT * FROM employees_history;
+SELECT * FROM olxga_irn.employees_history;
