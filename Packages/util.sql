@@ -44,13 +44,13 @@ CREATE OR REPLACE PACKAGE BODY olxga_irn.util AS
     
     FUNCTION get_job_title(p_employee_id IN NUMBER) RETURN VARCHAR IS
     
-        v_job_title jobs.job_title%TYPE;
+        v_job_title olxga_irn.jobs.job_title%TYPE;
     
     BEGIN
         SELECT j.job_title
         INTO v_job_title
         FROM olxga_irn.employees em
-        JOIN jobs j
+        JOIN olxga_irn.jobs j
         ON em.job_id = j.job_id
         WHERE em.employee_id = p_employee_id;
         
@@ -61,13 +61,13 @@ CREATE OR REPLACE PACKAGE BODY olxga_irn.util AS
     
     FUNCTION get_dep_name (p_employee_id IN NUMBER) RETURN VARCHAR IS
     
-        v_department_name departments.department_name%TYPE;
+        v_department_name olxga_irn.departments.department_name%TYPE;
     
     BEGIN
         SELECT d.department_name
         INTO v_department_name
         FROM olxga_irn.employees em
-        JOIN departments d
+        JOIN olxga_irn.departments d
         ON em.department_id = d.department_id
         WHERE em.employee_id = p_employee_id;
     
@@ -190,8 +190,6 @@ CREATE OR REPLACE PACKAGE BODY olxga_irn.util AS
         END;
     
     END del_jobs;
-
-
 
 
     PROCEDURE add_new_jobs(p_job_id IN VARCHAR2,
