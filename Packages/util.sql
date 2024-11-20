@@ -235,15 +235,15 @@ CREATE OR REPLACE PACKAGE BODY olxga_irn.util AS
 
     
     PROCEDURE add_employee(p_first_name     IN VARCHAR2,
-                       p_last_name      IN VARCHAR2,
-                       p_email          IN VARCHAR2,
-                       p_phone_number   IN VARCHAR2,
-                       p_hire_date      IN DATE DEFAULT TRUNC(SYSDATE, 'dd'),
-                       p_job_id         IN VARCHAR2,
-                       p_salary         IN NUMBER,
-                       p_commission_pct IN NUMBER DEFAULT NULL,
-                       p_manager_id     IN NUMBER DEFAULT 100,
-                       p_department_id  IN NUMBER) IS
+                           p_last_name      IN VARCHAR2,
+                           p_email          IN VARCHAR2,
+                           p_phone_number   IN VARCHAR2,
+                           p_hire_date      IN DATE DEFAULT TRUNC(SYSDATE, 'dd'),
+                           p_job_id         IN VARCHAR2,
+                           p_salary         IN NUMBER,
+                           p_commission_pct IN NUMBER DEFAULT NULL,
+                           p_manager_id     IN NUMBER DEFAULT 100,
+                           p_department_id  IN NUMBER) IS
                            
         v_job_id           VARCHAR2(10);
         v_department_id    NUMBER;
@@ -255,16 +255,17 @@ CREATE OR REPLACE PACKAGE BODY olxga_irn.util AS
 
     BEGIN
 
-        log_util.log_start('add_employee', 'Додавання нового співробітника');
+        olxga_irn.log_util.log_start ('add_employee', 'Додавання нового співробітника');
 
-        SELECT COUNT(*)
-        INTO v_job_id
-        FROM olxga_irn.jobs
-        WHERE job_id = p_job_id;
-
-        IF v_job_id = 0 THEN
+        BEGIN
+          SELECT min_salary, max_salary
+          INTO v_min_salary, v_max_salary
+          FROM jobs
+          WHERE job_id = p_job_id;
+        EXCEPTION
+          WHEN OTHERS THEN
             raise_application_error(-20001, 'Введено неіснуючий код посади');
-        END IF;
+        END;
 
         SELECT COUNT(*)
         INTO v_department_id
@@ -274,11 +275,6 @@ CREATE OR REPLACE PACKAGE BODY olxga_irn.util AS
         IF v_department_id = 0 THEN
             raise_application_error(-20001, 'Введено неіснуючий ідентифікатор відділу');
         END IF;
-
-        SELECT min_salary, max_salary
-        INTO v_min_salary, v_max_salary
-        FROM olxga_irn.jobs
-        WHERE job_id = p_job_id;
 
         IF p_salary < v_min_salary OR p_salary > v_max_salary THEN
             raise_application_error(-20001, 'Введено неприпустиму заробітну плату для даного коду посади');
@@ -299,21 +295,20 @@ CREATE OR REPLACE PACKAGE BODY olxga_irn.util AS
 
             v_message := 'Співробітник ' || p_first_name || ' ' || p_last_name || ', '
                          || p_job_id || ', ' || p_department_id || ' успішно додано до системи';
-            DBMS_OUTPUT.PUT_LINE(v_message);
 
         EXCEPTION
             WHEN OTHERS THEN
-                log_util.log_error('add_employee', SQLERRM, 'Помилка при додаванні співробітника');
+                olxga_irn.log_util.log_error('add_employee', SQLERRM, 'Помилка при додаванні співробітника');
                 raise_application_error(-20001, 'Помилка при додаванні співробітника: ' || SQLERRM);
 
         END;
 
-        log_util.log_finish('add_employee', v_message);
+        olxga_irn.log_util.log_finish('add_employee', v_message);
 
     END add_employee;
     
     
-PROCEDURE fire_an_employee(p_employee_id IN NUMBER) IS
+    PROCEDURE fire_an_employee (p_employee_id IN NUMBER) IS
         v_employee_id   NUMBER;
         v_first_name    VARCHAR2(50);
         v_last_name     VARCHAR2(50);
@@ -325,45 +320,43 @@ PROCEDURE fire_an_employee(p_employee_id IN NUMBER) IS
         v_message       VARCHAR2(4000);
 
     BEGIN
-        log_util.log_start('fire_an_employee', 'Звільнення співробітника');
+        olxga_irn.log_util.log_start('fire_an_employee', 'Звільнення співробітника');
         
         check_working_hours;
-        
-        SELECT COUNT(*)
-        INTO v_employee_id
-        FROM olxga_irn.employees
-        WHERE employee_id = p_employee_id;
 
-        IF v_employee_id = 0 THEN
-            raise_application_error(-20001, 'Переданого співробітника не існує');
-        END IF;
-       
-        SELECT first_name, last_name, job_id, department_id, manager_id, hire_date
-        INTO v_first_name, v_last_name, v_job_id, v_department_id, v_manager_id, v_hire_date
-        FROM olxga_irn.employees
-        WHERE employee_id = p_employee_id;
+        BEGIN
+            SELECT first_name, last_name, job_id, department_id, manager_id, hire_date
+            INTO v_first_name, v_last_name, v_job_id, v_department_id, v_manager_id, v_hire_date
+            FROM olxga_irn.employees
+            WHERE employee_id = p_employee_id;
+        EXCEPTION
+            WHEN NO_DATA_FOUND THEN
+                RAISE_APPLICATION_ERROR(-20001, 'Переданого співробітника не існує');
+        END;
         
         BEGIN
             DELETE FROM olxga_irn.employees
             WHERE employee_id = p_employee_id;
-
-          
-            v_message :=  'Співробітник ' || v_first_name || ' ' || v_last_name || ', ' || v_job_id || 
-                ', ' || v_department_id || ' успішно звільнений.';
-            DBMS_OUTPUT.PUT_LINE(v_message);
-            
-            EXCEPTION
-                WHEN OTHERS THEN
-                log_util.log_error('fire_an_employee', SQLERRM, 'Помилка при звільненні співробітника.');
-                raise_application_error(-20001, 'Помилка при звільненні співробітника: ' || SQLERRM);
-            END;
-            
-            INSERT INTO olxga_irn.employees_history (
-                employee_id, first_name, last_name, job_id, department_id, manager_id, hire_date, fire_date, reason)
+        EXCEPTION
+            WHEN OTHERS THEN
+                olxga_irn.log_util.log_error('fire_an_employee', SQLERRM, 'Помилка при звільненні співробітника.');
+                RAISE_APPLICATION_ERROR(-20002, 'Помилка при звільненні співробітника: ' || SQLERRM);
+        END;
+    
+        BEGIN
+            INSERT INTO olxga_irn.employees_history 
+                (employee_id, first_name, last_name, job_id, department_id, manager_id, hire_date, fire_date, reason)
             VALUES 
                 (p_employee_id, v_first_name, v_last_name, v_job_id, v_department_id, v_manager_id, v_hire_date, v_fire_date, 'Звільнення');
+        EXCEPTION
+            WHEN OTHERS THEN
+                olxga_irn.log_util.log_error('fire_an_employee', SQLERRM, 'Помилка при додаванні запису в історію.');
+                RAISE_APPLICATION_ERROR(-20003, 'Помилка при записі в історію: ' || SQLERRM);
+        END;
 
-        log_util.log_finish('fire_an_employee', v_message);
+        v_message := 'Співробітник ' || v_first_name || ' ' || v_last_name || ', ' || v_job_id || ', ' || v_department_id || ' успішно звільнений.';
+
+        olxga_irn.log_util.log_finish('fire_an_employee', v_message);
             
     END fire_an_employee; 
 
