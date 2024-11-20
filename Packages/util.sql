@@ -1,5 +1,5 @@
 --Специфікація
-CREATE OR REPLACE PACKAGE util AS
+CREATE OR REPLACE PACKAGE olxga_irn.util AS
 
     TYPE rec_value_list IS RECORD (region_name VARCHAR2(100),
                                    employees   NUMBER);
@@ -40,7 +40,7 @@ END util;
 
 
 --Тіло
-CREATE OR REPLACE PACKAGE body util AS
+CREATE OR REPLACE PACKAGE BODY olxga_irn.util AS
     
     FUNCTION get_job_title(p_employee_id IN NUMBER) RETURN VARCHAR IS
     
@@ -49,7 +49,7 @@ CREATE OR REPLACE PACKAGE body util AS
     BEGIN
         SELECT j.job_title
         INTO v_job_title
-        FROM employees em
+        FROM olxga_irn.employees em
         JOIN jobs j
         ON em.job_id = j.job_id
         WHERE em.employee_id = p_employee_id;
@@ -66,7 +66,7 @@ CREATE OR REPLACE PACKAGE body util AS
     BEGIN
         SELECT d.department_name
         INTO v_department_name
-        FROM employees em
+        FROM olxga_irn.employees em
         JOIN departments d
         ON em.department_id = d.department_id
         WHERE em.employee_id = p_employee_id;
@@ -84,7 +84,7 @@ CREATE OR REPLACE PACKAGE body util AS
     
         IF p_table NOT IN ('products', 'products_old') THEN
             v_message := 'Неприпустиме значення! Очікується products або products_old';
-            to_log(p_appl_proc => 'util.get_sum_price_sales', p_message => v_message);
+            olxga_irn.to_log(p_appl_proc => 'util.get_sum_price_sales', p_message => v_message);
             raise_application_error(-20001, v_message);
         END IF;
         
@@ -217,7 +217,7 @@ CREATE OR REPLACE PACKAGE body util AS
                 RAISE salary_err;
             END IF;
             
-            INSERT INTO jobs(job_id, job_title, min_salary, max_salary)
+            INSERT INTO olxga_irn.jobs (job_id, job_title, min_salary, max_salary)
             VALUES (p_job_id, p_job_title, p_min_salary, v_max_salary);
             po_err := 'Посада '||p_job_id||' успішно додана';
         
@@ -259,7 +259,7 @@ CREATE OR REPLACE PACKAGE body util AS
 
         SELECT COUNT(*)
         INTO v_job_id
-        FROM jobs
+        FROM olxga_irn.jobs
         WHERE job_id = p_job_id;
 
         IF v_job_id = 0 THEN
@@ -268,7 +268,7 @@ CREATE OR REPLACE PACKAGE body util AS
 
         SELECT COUNT(*)
         INTO v_department_id
-        FROM departments
+        FROM olxga_irn.departments
         WHERE department_id = p_department_id;
 
         IF v_department_id = 0 THEN
@@ -277,7 +277,7 @@ CREATE OR REPLACE PACKAGE body util AS
 
         SELECT min_salary, max_salary
         INTO v_min_salary, v_max_salary
-        FROM jobs
+        FROM olxga_irn.jobs
         WHERE job_id = p_job_id;
 
         IF p_salary < v_min_salary OR p_salary > v_max_salary THEN
@@ -288,10 +288,10 @@ CREATE OR REPLACE PACKAGE body util AS
 
         SELECT NVL(MAX(employee_id), 0) + 1
         INTO v_employee_id
-        FROM employees;
+        FROM olxga_irn.employees;
 
         BEGIN
-            INSERT INTO employees (employee_id, first_name, last_name, email, phone_number, hire_date,
+            INSERT INTO olxga_irn.employees (employee_id, first_name, last_name, email, phone_number, hire_date,
                 job_id, salary, commission_pct, manager_id, department_id) 
                 VALUES 
                 (v_employee_id, p_first_name, p_last_name, p_email, p_phone_number,
@@ -331,7 +331,7 @@ PROCEDURE fire_an_employee(p_employee_id IN NUMBER) IS
         
         SELECT COUNT(*)
         INTO v_employee_id
-        FROM employees
+        FROM olxga_irn.employees
         WHERE employee_id = p_employee_id;
 
         IF v_employee_id = 0 THEN
@@ -340,11 +340,11 @@ PROCEDURE fire_an_employee(p_employee_id IN NUMBER) IS
        
         SELECT first_name, last_name, job_id, department_id, manager_id, hire_date
         INTO v_first_name, v_last_name, v_job_id, v_department_id, v_manager_id, v_hire_date
-        FROM employees
+        FROM olxga_irn.employees
         WHERE employee_id = p_employee_id;
         
         BEGIN
-            DELETE FROM employees
+            DELETE FROM olxga_irn.employees
             WHERE employee_id = p_employee_id;
 
           
@@ -358,7 +358,7 @@ PROCEDURE fire_an_employee(p_employee_id IN NUMBER) IS
                 raise_application_error(-20001, 'Помилка при звільненні співробітника: ' || SQLERRM);
             END;
             
-            INSERT INTO employees_history (
+            INSERT INTO olxga_irn.employees_history (
                 employee_id, first_name, last_name, job_id, department_id, manager_id, hire_date, fire_date, reason)
             VALUES 
                 (p_employee_id, v_first_name, v_last_name, v_job_id, v_department_id, v_manager_id, v_hire_date, v_fire_date, 'Звільнення');
