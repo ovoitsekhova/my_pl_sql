@@ -11,7 +11,6 @@ CREATE OR REPLACE PACKAGE olxga_irn.log_util AS
                         p_sqlerrm IN VARCHAR2, 
                         p_text IN VARCHAR2 DEFAULT NULL);
 END log_util;
-/
 
 
 --Тіло
@@ -77,4 +76,3 @@ CREATE OR REPLACE PACKAGE BODY olxga_irn.log_util AS
     END log_error;
 
 END log_util;
-/
