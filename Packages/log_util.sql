@@ -22,7 +22,7 @@ CREATE OR REPLACE PACKAGE BODY log_util AS
     PRAGMA autonomous_transaction;
     
     BEGIN
-        INSERT INTO logs (id, appl_proc, message)
+        INSERT INTO olxga_irn.logs (id, appl_proc, message)
         VALUES (log_seq.NEXTVAL, p_appl_proc, p_message);
         COMMIT;
     END to_log;
