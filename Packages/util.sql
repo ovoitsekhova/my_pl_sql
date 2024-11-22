@@ -5,6 +5,18 @@ CREATE OR REPLACE PACKAGE olxga_irn.util AS
                                    employees   NUMBER);
     TYPE tab_value_list IS TABLE OF rec_value_list;
     
+    TYPE rec_values_list IS RECORD (value_list VARCHAR2(100));
+
+    TYPE tab_values_list IS TABLE OF rec_values_list;
+    
+    TYPE rec_exchange IS RECORD (r030 NUMBER,
+                                txt VARCHAR2(100),
+                                rate NUMBER,
+                                cur VARCHAR2(100),
+                                exchangedate DATE );
+    TYPE tab_exchange IS TABLE OF rec_exchange;
+
+
     FUNCTION get_job_title(p_employee_id IN NUMBER) RETURN VARCHAR;
     
     FUNCTION get_dep_name (p_employee_id IN NUMBER) RETURN VARCHAR;
@@ -12,6 +24,12 @@ CREATE OR REPLACE PACKAGE olxga_irn.util AS
     FUNCTION get_sum_price_sales (p_table VARCHAR2 DEFAULT 'products_old') RETURN NUMBER;
     
     FUNCTION get_region_cnt_emp (p_department_id IN NUMBER DEFAULT NULL) RETURN tab_value_list PIPELINED;    
+    
+    FUNCTION table_from_list(p_list_val IN VARCHAR2,
+                             p_separator IN VARCHAR2 DEFAULT ',') RETURN tab_values_list PIPELINED;
+                             
+    FUNCTION get_currency(p_currency IN VARCHAR2 DEFAULT 'USD',
+                          p_exchangedate IN DATE DEFAULT SYSDATE) RETURN tab_exchange PIPELINED;
     
     PROCEDURE del_jobs    (p_job_id  IN  VARCHAR2,
                            po_result OUT VARCHAR2);
@@ -35,6 +53,8 @@ CREATE OR REPLACE PACKAGE olxga_irn.util AS
 
     PROCEDURE fire_an_employee(p_employee_id IN NUMBER);
     
+    PROCEDURE api_nbu_sync;
+    
 END util;
 
 
@@ -44,13 +64,13 @@ CREATE OR REPLACE PACKAGE BODY olxga_irn.util AS
     
     FUNCTION get_job_title(p_employee_id IN NUMBER) RETURN VARCHAR IS
     
-        v_job_title olxga_irn.jobs.job_title%TYPE;
+        v_job_title jobs.job_title%TYPE;
     
     BEGIN
         SELECT j.job_title
         INTO v_job_title
         FROM olxga_irn.employees em
-        JOIN olxga_irn.jobs j
+        JOIN jobs j
         ON em.job_id = j.job_id
         WHERE em.employee_id = p_employee_id;
         
@@ -61,13 +81,13 @@ CREATE OR REPLACE PACKAGE BODY olxga_irn.util AS
     
     FUNCTION get_dep_name (p_employee_id IN NUMBER) RETURN VARCHAR IS
     
-        v_department_name olxga_irn.departments.department_name%TYPE;
+        v_department_name departments.department_name%TYPE;
     
     BEGIN
         SELECT d.department_name
         INTO v_department_name
         FROM olxga_irn.employees em
-        JOIN olxga_irn.departments d
+        JOIN departments d
         ON em.department_id = d.department_id
         WHERE em.employee_id = p_employee_id;
     
@@ -139,7 +159,85 @@ CREATE OR REPLACE PACKAGE BODY olxga_irn.util AS
         END;
     
     END get_region_cnt_emp;
-       
+
+
+    FUNCTION table_from_list(p_list_val IN VARCHAR2,
+                             p_separator IN VARCHAR2 DEFAULT ',') RETURN tab_values_list PIPELINED IS
+        out_rec tab_values_list := tab_values_list();
+        l_cur SYS_REFCURSOR;
+        
+    BEGIN
+    OPEN l_cur FOR
+    SELECT TRIM(REGEXP_SUBSTR(p_list_val, '[^'||p_separator||']+', 1, LEVEL)) AS cur_value
+    FROM dual
+    CONNECT BY LEVEL <= REGEXP_COUNT(p_list_val, p_separator) + 1;
+        BEGIN
+            LOOP
+                EXIT WHEN l_cur%NOTFOUND;
+                FETCH l_cur BULK COLLECT
+                INTO out_rec;
+                    FOR i IN 1 .. out_rec.count LOOP
+                        PIPE ROW(out_rec(i));
+                    END LOOP;
+            END LOOP;
+            
+            CLOSE l_cur;
+            
+            EXCEPTION
+                WHEN OTHERS THEN
+                IF (l_cur%ISOPEN) THEN
+                    CLOSE l_cur;
+                    RAISE;
+                ELSE
+                    RAISE;
+                END IF;
+        END;
+    END table_from_list;
+
+    
+    FUNCTION get_currency(p_currency IN VARCHAR2 DEFAULT 'USD',
+                          p_exchangedate IN DATE DEFAULT SYSDATE) RETURN tab_exchange PIPELINED IS
+        out_rec tab_exchange := tab_exchange();
+        l_cur SYS_REFCURSOR;
+        
+    BEGIN
+        OPEN l_cur FOR
+            SELECT tt.r030, tt.txt, tt.rate, tt.cur, TO_DATE(tt.exchangedate, 'dd.mm.yyyy') AS exchangedate
+            FROM (SELECT get_needed_curr(p_valcode => p_currency,p_date => p_exchangedate) AS json_value FROM dual)
+            CROSS JOIN json_table
+            (
+            json_value, '$[*]'
+            COLUMNS
+                (
+                r030 NUMBER PATH '$.r030',
+                txt VARCHAR2(100) PATH '$.txt',
+                rate NUMBER PATH '$.rate',
+                cur VARCHAR2(100) PATH '$.cc',
+                exchangedate VARCHAR2(100) PATH '$.exchangedate'
+                )
+            ) TT;
+        BEGIN
+            LOOP
+                EXIT WHEN l_cur%NOTFOUND;
+                FETCH l_cur BULK COLLECT
+                INTO out_rec;
+                    FOR i IN 1 .. out_rec.count LOOP
+                        PIPE ROW(out_rec(i));
+                    END LOOP;
+            END LOOP;
+            CLOSE l_cur;
+            
+        EXCEPTION
+            WHEN OTHERS THEN
+               IF (l_cur%ISOPEN) THEN
+                   CLOSE l_cur;
+                   RAISE;
+               ELSE
+                   RAISE;
+               END IF;
+        END;
+    END get_currency;
+    
     
     PROCEDURE check_work_time IS
     
@@ -190,6 +288,8 @@ CREATE OR REPLACE PACKAGE BODY olxga_irn.util AS
         END;
     
     END del_jobs;
+
+
 
 
     PROCEDURE add_new_jobs(p_job_id IN VARCHAR2,
@@ -357,5 +457,42 @@ CREATE OR REPLACE PACKAGE BODY olxga_irn.util AS
         olxga_irn.log_util.log_finish('fire_an_employee', v_message);
             
     END fire_an_employee; 
+    
+    
+    PROCEDURE api_nbu_sync IS
+        v_list_currencies VARCHAR2(2000);
+    
+    BEGIN
+    
+        olxga_irn.log_util.log_start('api_nbu_sync', 'Синхронізація курсів валют');
+    
+        BEGIN
+            SELECT value_text
+            INTO v_list_currencies
+            FROM olxga_irn.sys_params
+            WHERE param_name = 'list_currencies';
+        EXCEPTION
+            WHEN OTHERS THEN
+                olxga_irn.log_util.log_error('api_nbu_sync', 'Помилка отримання списку валют: ' || SQLERRM);
+                RAISE_APPLICATION_ERROR(-20001, 'Не вдалося отримати список валют.');
+        END;
+    
+        FOR cc IN (SELECT value_list AS curr 
+                   FROM TABLE(olxga_irn.util.table_from_list(p_list_val => v_list_currencies))) LOOP
+            BEGIN
+                INSERT INTO cur_exchange (r030, txt, rate, cur, exchangedate)
+                SELECT * FROM TABLE(util.get_currency(p_currency => cc.curr));
+    
+                olxga_irn.log_util.log_finish('api_nbu_sync', 'Дані для валюти ' || cc.curr || ' успішно оновлені.');
+            EXCEPTION
+                WHEN OTHERS THEN
+                    olxga_irn.log_util.log_error('api_nbu_sync', 'Помилка обробки валюти ' || cc.curr || ': ' || SQLERRM);
+                    NULL;
+            END;
+        END LOOP;
+    
+        olxga_irn.log_util.log_finish('api_nbu_sync', 'Синхронізація завершена успішно.');
+        
+    END api_nbu_sync;
 
 END util;
