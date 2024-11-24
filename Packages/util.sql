@@ -52,6 +52,17 @@ CREATE OR REPLACE PACKAGE olxga_irn.util AS
                            p_department_id  IN NUMBER);                         
 
     PROCEDURE fire_an_employee(p_employee_id IN NUMBER);
+
+    PROCEDURE change_attribute_employee(p_employee_id      IN NUMBER,
+                                        p_first_name       IN VARCHAR2 DEFAULT NULL,
+                                        p_last_name        IN VARCHAR2 DEFAULT NULL,
+                                        p_email            IN VARCHAR2 DEFAULT NULL,
+                                        p_phone_number     IN VARCHAR2 DEFAULT NULL,
+                                        p_job_id           IN VARCHAR2 DEFAULT NULL,
+                                        p_salary           IN NUMBER DEFAULT NULL,
+                                        p_commission_pct   IN NUMBER DEFAULT NULL,
+                                        p_manager_id       IN NUMBER DEFAULT NULL,
+                                        p_department_id    IN NUMBER DEFAULT NULL); 
     
     PROCEDURE api_nbu_sync;
     
@@ -60,7 +71,7 @@ END util;
 
 
 --Тіло
-CREATE OR REPLACE PACKAGE BODY olxga_irn.util AS
+create or replace PACKAGE BODY           util AS
     
     FUNCTION get_job_title(p_employee_id IN NUMBER) RETURN VARCHAR IS
     
@@ -457,6 +468,83 @@ CREATE OR REPLACE PACKAGE BODY olxga_irn.util AS
         olxga_irn.log_util.log_finish('fire_an_employee', v_message);
             
     END fire_an_employee; 
+    
+    
+    PROCEDURE change_attribute_employee(p_employee_id      IN NUMBER,
+                                        p_first_name       IN VARCHAR2 DEFAULT NULL,
+                                        p_last_name        IN VARCHAR2 DEFAULT NULL,
+                                        p_email            IN VARCHAR2 DEFAULT NULL,
+                                        p_phone_number     IN VARCHAR2 DEFAULT NULL,
+                                        p_job_id           IN VARCHAR2 DEFAULT NULL,
+                                        p_salary           IN NUMBER DEFAULT NULL,
+                                        p_commission_pct   IN NUMBER DEFAULT NULL,
+                                        p_manager_id       IN NUMBER DEFAULT NULL,
+                                        p_department_id    IN NUMBER DEFAULT NULL) IS
+        v_dynamic_sql      VARCHAR2(4000);
+        v_attribute_to_upd NUMBER := 0;
+        v_message          VARCHAR2(4000);
+        
+    BEGIN
+        olxga_irn.log_util.log_start('change_attribute_employee', 'Зміна атрибутів співробітника');
+    
+        v_dynamic_sql := 'UPDATE employees SET ';
+        
+        IF p_first_name IS NOT NULL THEN
+            v_dynamic_sql := v_dynamic_sql || 'first_name = ''' || p_first_name || ''', ';
+            v_attribute_to_upd := v_attribute_to_upd + 1;
+        END IF;
+        IF p_last_name IS NOT NULL THEN
+            v_dynamic_sql := v_dynamic_sql || 'last_name = ''' || p_last_name || ''', ';
+            v_attribute_to_upd := v_attribute_to_upd + 1;
+        END IF;
+        IF p_email IS NOT NULL THEN
+            v_dynamic_sql := v_dynamic_sql || 'email = ''' || p_email || ''', ';
+            v_attribute_to_upd := v_attribute_to_upd + 1;        
+        END IF;
+        IF p_phone_number IS NOT NULL THEN
+            v_dynamic_sql := v_dynamic_sql || 'phone_number = ''' || p_phone_number || ''', ';
+            v_attribute_to_upd := v_attribute_to_upd + 1;        
+        END IF;
+        IF p_job_id IS NOT NULL THEN
+            v_dynamic_sql := v_dynamic_sql || 'job_id = ''' || p_job_id || ''', ';
+            v_attribute_to_upd := v_attribute_to_upd + 1;        
+        END IF;
+        IF p_salary IS NOT NULL THEN
+            v_dynamic_sql := v_dynamic_sql || 'salary = ' || p_salary || ', ';
+            v_attribute_to_upd := v_attribute_to_upd + 1;
+        END IF;
+        IF p_commission_pct IS NOT NULL THEN
+            v_dynamic_sql := v_dynamic_sql || 'commission_pct = ' || p_commission_pct || ', ';
+            v_attribute_to_upd := v_attribute_to_upd + 1;        
+        END IF;
+        IF p_manager_id IS NOT NULL THEN
+            v_dynamic_sql := v_dynamic_sql || 'manager_id = ' || p_manager_id || ', ';
+            v_attribute_to_upd := v_attribute_to_upd + 1;        
+        END IF;
+        IF p_department_id IS NOT NULL THEN
+            v_dynamic_sql := v_dynamic_sql || 'department_id = ' || p_department_id || ', ';
+            v_attribute_to_upd := v_attribute_to_upd + 1;        
+        END IF;
+    
+        IF v_attribute_to_upd = 0 THEN
+            olxga_irn.log_util.log_finish('change_attribute_employee', 'Не вказано жодного параметра для оновлення.');
+            RAISE_APPLICATION_ERROR(-20001, 'Не вказано жодного параметра для оновлення.');
+        END IF;
+    
+        v_dynamic_sql := RTRIM(v_dynamic_sql, ', ') || ' WHERE employee_id = ' || p_employee_id;
+    
+        BEGIN
+            EXECUTE IMMEDIATE v_dynamic_sql;
+    
+            v_message := 'У співробітника ' || p_employee_id || ' успішно оновлено ' || v_attribute_to_upd || ' атрибути(-ів).';
+            olxga_irn.log_util.log_finish('change_attribute_employee', v_message);
+            
+        EXCEPTION
+            WHEN OTHERS THEN
+                olxga_irn.log_util.log_error('change_attribute_employee', SQLERRM, 'Помилка при оновленні атрибутів');
+                RAISE_APPLICATION_ERROR(-20002, 'Помилка при оновленні атрибутів: ' || SQLERRM);
+        END;
+    END change_attribute_employee;
     
     
     PROCEDURE api_nbu_sync IS
