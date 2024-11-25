@@ -11,10 +11,8 @@
         PRAGMA AUTONOMOUS_TRANSACTION;
     BEGIN
         EXECUTE IMMEDIATE p_sql;
-        COMMIT;
     EXCEPTION
         WHEN OTHERS THEN
-            ROLLBACK;
             olxga_irn.log_util.log_error('do_create_table', SQLERRM, 'Помилка створення таблиці');
     END;
 
@@ -26,7 +24,7 @@ BEGIN
         SELECT table_name, ddl_code
         FROM (
             SELECT table_name,
-                   'CREATE TABLE ' || table_name || ' (' ||
+                   'CREATE TABLE ' p_target_scheme || '.' || table_name || ' (' ||
                    LISTAGG(column_name || ' ' || data_type || NVL(count_symbol, ''), ', ') 
                    WITHIN GROUP (ORDER BY column_id) || ')' AS ddl_code
             FROM (
